@@ -58,13 +58,13 @@ def view_mining_difficulty(
 
         draw_big_number(stdscr, BIG_NUM_ROW, format_number(blocks_left), rows, cols, glyphs)
         draw_centered(stdscr, DETAIL1_ROW, "blocks until difficulty adjustment", rows, cols)
-        draw_centered(stdscr, DETAIL2_ROW, f"≈ {format_duration(secs_left)}  ·  epoch {epoch_num}", rows, cols)
+        draw_centered(stdscr, DETAIL2_ROW, f"~{format_duration(secs_left)}  *  epoch {epoch_num}", rows, cols)
 
         da = data.difficulty_adjustment
         if da:
             change = da.get("difficultyChange", 0)
             t = data.difficulty / 1e12
-            draw_centered(stdscr, DETAIL3_ROW, f"est. change: {change:+.2f}%  ·  current: {t:.2f}T", rows, cols)
+            draw_centered(stdscr, DETAIL3_ROW, f"est. change: {change:+.2f}%  *  current: {t:.2f}T", rows, cols)
         else:
             t = data.difficulty / 1e12
             draw_centered(stdscr, DETAIL3_ROW, f"current difficulty: {t:.2f}T", rows, cols)
@@ -93,7 +93,7 @@ def view_mining_halving(
 
         draw_big_number(stdscr, BIG_NUM_ROW, format_number(blocks_left), rows, cols, glyphs)
         draw_centered(stdscr, DETAIL1_ROW, "blocks until next halving", rows, cols)
-        draw_centered(stdscr, DETAIL2_ROW, f"≈ {format_duration(secs_left)}  ·  epoch {epoch}", rows, cols)
+        draw_centered(stdscr, DETAIL2_ROW, f"~{format_duration(secs_left)}  *  epoch {epoch}", rows, cols)
         draw_centered(stdscr, DETAIL3_ROW, f"current subsidy: {subsidy:.3f} BTC / block", rows, cols)
         progress = (height % HALVING_INTERVAL) / HALVING_INTERVAL
         draw_centered(stdscr, PROGRESS_ROW, progress_bar(progress, 50), rows, cols)

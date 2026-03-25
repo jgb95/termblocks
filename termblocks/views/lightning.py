@@ -29,9 +29,9 @@ def view_ln_capacity_btc(
                 usd_str = f"${usd / 1e6:.1f}M USD"
             else:
                 usd_str = f"${format_number(usd)} USD"
-            draw_centered(stdscr, DETAIL2_ROW, f"≈ {usd_str}", rows, cols)
+            draw_centered(stdscr, DETAIL2_ROW, f"~{usd_str}", rows, cols)
         if data.ln_num_nodes is not None and data.ln_num_channels is not None:
-            draw_centered(stdscr, DETAIL3_ROW, f"{format_number(data.ln_num_nodes)} nodes  ·  {format_number(data.ln_num_channels)} channels", rows, cols)
+            draw_centered(stdscr, DETAIL3_ROW, f"{format_number(data.ln_num_nodes)} nodes  *  {format_number(data.ln_num_channels)} channels", rows, cols)
     else:
         draw_big_number(stdscr, BIG_NUM_ROW, "---", rows, cols, glyphs)
         draw_centered(stdscr, DETAIL1_ROW, "lightning network capacity (BTC)", rows, cols)
@@ -58,7 +58,7 @@ def view_ln_capacity_usd(
         draw_centered(stdscr, DETAIL1_ROW, "lightning network capacity (USD)", rows, cols)
         draw_centered(stdscr, DETAIL2_ROW, f"{format_number(cap)} BTC locked", rows, cols)
         if data.ln_num_nodes is not None and data.ln_num_channels is not None:
-            draw_centered(stdscr, DETAIL3_ROW, f"{format_number(data.ln_num_nodes)} nodes  ·  {format_number(data.ln_num_channels)} channels", rows, cols)
+            draw_centered(stdscr, DETAIL3_ROW, f"{format_number(data.ln_num_nodes)} nodes  *  {format_number(data.ln_num_channels)} channels", rows, cols)
     else:
         draw_big_number(stdscr, BIG_NUM_ROW, "---", rows, cols, glyphs)
         draw_centered(stdscr, DETAIL1_ROW, "lightning network capacity (USD)", rows, cols)

@@ -7,7 +7,7 @@ REFRESH_INTERVAL = 10
 CYCLE_INTERVAL = 10
 MEMPOOL_API = "https://mempool.space/api"
 PRICE_API = "https://rate.sx/1btc"
-DEFAULT_BLOCK_CHAR = "\u2588"
+DEFAULT_BLOCK_CHAR = "#"
 
 # --- Bitcoin protocol constants ---
 HALVING_INTERVAL = 210000

@@ -74,7 +74,10 @@ def run_screensaver(stdscr: curses.window, rows: int, cols: int, glyphs: dict) -
 # ============================================================
 
 def main(stdscr: curses.window) -> None:
-    curses.curs_set(0)
+    try:
+        curses.curs_set(0)
+    except curses.error:
+        pass  # Terminal doesn't support hiding the cursor (e.g. TVI925)
     stdscr.nodelay(True)
     stdscr.timeout(200)
 
@@ -104,22 +107,22 @@ def main(stdscr: curses.window) -> None:
         elif ch in (ord("r"), ord("R")):
             bitcoin.request_refresh()
 
-        elif ch == curses.KEY_LEFT:
+        elif ch in (curses.KEY_LEFT, ord("h"), ord("H")):
             screen_idx = (screen_idx - 1) % len(MENU)
             view_idx = 0
             last_cycle = time.monotonic()
 
-        elif ch == curses.KEY_RIGHT:
+        elif ch in (curses.KEY_RIGHT, ord("l"), ord("L")):
             screen_idx = (screen_idx + 1) % len(MENU)
             view_idx = 0
             last_cycle = time.monotonic()
 
-        elif ch == curses.KEY_UP:
+        elif ch in (curses.KEY_UP, ord("k"), ord("K")):
             num_views = len(MENU[screen_idx]["views"])
             view_idx = (view_idx - 1) % num_views
             last_cycle = time.monotonic()
 
-        elif ch == curses.KEY_DOWN:
+        elif ch in (curses.KEY_DOWN, ord("j"), ord("J")):
             num_views = len(MENU[screen_idx]["views"])
             view_idx = (view_idx + 1) % num_views
             last_cycle = time.monotonic()

@@ -30,7 +30,7 @@ def view_mempool_fees(
         draw_centered(
             stdscr,
             DETAIL2_ROW,
-            f"fast: {data.fee_fast}  ·  medium: {data.fee_medium}  ·  slow: {data.fee_slow}",
+            f"fast: {data.fee_fast}  *  medium: {data.fee_medium}  *  slow: {data.fee_slow}",
             rows,
             cols,
         )
@@ -64,7 +64,7 @@ def view_mempool_count(
             draw_centered(
                 stdscr,
                 DETAIL3_ROW,
-                f"fast: {data.fee_fast}  ·  medium: {data.fee_medium}  ·  slow: {data.fee_slow} sat/vB",
+                f"fast: {data.fee_fast}  *  medium: {data.fee_medium}  *  slow: {data.fee_slow} sat/vB",
                 rows,
                 cols,
             )
