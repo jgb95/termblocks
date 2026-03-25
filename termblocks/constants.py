@@ -2,14 +2,12 @@
 Constants: configuration, layout row assignments, and content positioning.
 """
 
-import os as _os
-
 # --- Configuration ---
 REFRESH_INTERVAL = 10
 CYCLE_INTERVAL = 10
 MEMPOOL_API = "https://mempool.space/api"
 PRICE_API = "https://rate.sx/1btc"
-DEFAULT_BLOCK_CHAR = "B"
+DEFAULT_BLOCK_CHAR = "#"
 
 # --- Bitcoin protocol constants ---
 HALVING_INTERVAL = 210000
