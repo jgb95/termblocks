@@ -33,8 +33,8 @@ MAX_VIEWS = 5
 
 # --- Content area row positions (relative to screen rows) ---
 # Used by view functions so layout changes only need to happen here.
-# All views use the "rich" layout: big number starts at row 4.
-BIG_NUM_ROW = 4       # top row of the 5-row big-digit number (rows 4–8)
+# All views use the "rich" layout: big number starts at row 3.
+BIG_NUM_ROW = 3       # top row of the 6-row big-digit number (rows 3–8)
 DETAIL1_ROW = 10      # row 1: always describes what the big number is
 DETAIL2_ROW = 12      # row 2: secondary stat (blank row 11 between detail 1)
 DETAIL3_ROW = 14      # row 3: tertiary stat or progress bar label (blank row 13 between detail 2)
