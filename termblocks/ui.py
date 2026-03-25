@@ -54,21 +54,16 @@ _RAW_GLYPHS: dict[str, list[str]] = {
 }
 
 
-def build_glyphs(block_char: str = "#", acs_block: int | None = None) -> dict[str, list[str]]:
+def build_glyphs() -> dict[str, list[str]]:
     """
-    Return glyph map with '#' replaced by *block_char*.
-    If *acs_block* is given (a curses ACS integer), it is stored under the
-    reserved key '__acs__' so draw_big_number can use addch() instead of
-    addstr() — ACS integers cannot be embedded in Python strings.
+    Return glyph map where each character is drawn using itself as the fill.
+    e.g. the big '7' is rendered with '7' characters, ':' with ':' characters.
+    Spaces remain spaces.
     """
-    glyphs: dict[str, list[str]] = {
-        k: [row.replace("#", block_char) for row in rows]
+    return {
+        k: [row.replace("#", k) for row in rows]
         for k, rows in _RAW_GLYPHS.items()
     }
-    if acs_block is not None:
-        # Store as a single-element list to fit the dict value type
-        glyphs["__acs__"] = [str(acs_block)]
-    return glyphs
 
 
 def render_big_text(text: str, glyphs: dict[str, list[str]]) -> list[str]:
@@ -82,42 +77,6 @@ def render_big_text(text: str, glyphs: dict[str, list[str]]) -> list[str]:
                 lines[i] += gap
             lines[i] += glyph[i]
     return lines
-
-
-def draw_big_text_acs(
-    stdscr: curses.window,
-    row: int,
-    col: int,
-    lines: list[str],
-    acs_block: int,
-    max_row: int,
-    max_col: int,
-) -> None:
-    """
-    Draw pre-rendered big-text lines cell by cell, using addch(acs_block)
-    for each '#' sentinel and addstr for runs of spaces.  This is needed
-    because ACS characters are large integers that cannot be embedded in
-    a Python str for addstr().
-    """
-    for i, line in enumerate(lines):
-        r = row + i
-        if r < 0 or r >= max_row:
-            continue
-        c = col
-        for ch in line:
-            if c < 0:
-                c += 1
-                continue
-            if c >= max_col:
-                break
-            try:
-                if ch == "#":
-                    stdscr.addch(r, c, acs_block)
-                else:
-                    stdscr.addch(r, c, ord(ch))
-            except curses.error:
-                pass
-            c += 1
 
 
 # ============================================================
@@ -205,17 +164,8 @@ def draw_big_number(
     max_col: int,
     glyphs: dict[str, list[str]],
 ) -> None:
-    # Check if ACS block rendering was requested (stored by build_glyphs)
-    acs_entry = glyphs.get("__acs__")
-    if acs_entry is not None:
-        acs_block = int(acs_entry[0])
-        raw_lines = render_big_text(text, _RAW_GLYPHS)
-        text_w = max(len(l) for l in raw_lines)
-        col = center_col(text_w, max_col)
-        draw_big_text_acs(stdscr, start_row, col, raw_lines, acs_block, max_row, max_col)
-    else:
-        for i, line in enumerate(render_big_text(text, glyphs)):
-            draw_centered(stdscr, start_row + i, line, max_row, max_col)
+    for i, line in enumerate(render_big_text(text, glyphs)):
+        draw_centered(stdscr, start_row + i, line, max_row, max_col)
 
 
 # ============================================================

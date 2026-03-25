@@ -15,7 +15,6 @@ import time
 
 from .constants import (
     CYCLE_INTERVAL,
-    DEFAULT_BLOCK_CHAR,
     TERMINAL_COLS,
     TERMINAL_ROWS,
 )
@@ -81,17 +80,7 @@ def main(stdscr: curses.window) -> None:
     stdscr.nodelay(True)
     stdscr.timeout(200)
 
-    # Use ACS_BLOCK if the terminal supports alternate character set (smacs).
-    # build_glyphs stores the ACS integer under '__acs__' so draw_big_number
-    # can use addch() — ACS integers can't be embedded in Python strings.
-    acs_block: int | None = None
-    try:
-        if curses.tigetstr("smacs") and curses.ACS_BLOCK not in (0, ord(" ")):
-            acs_block = curses.ACS_BLOCK
-    except (AttributeError, curses.error):
-        pass
-
-    glyphs = build_glyphs(DEFAULT_BLOCK_CHAR, acs_block)
+    glyphs = build_glyphs()
 
     bitcoin = BitcoinData()
     bitcoin.start()
