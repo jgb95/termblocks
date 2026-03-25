@@ -11,6 +11,7 @@ Main loop responsibilities:
 from __future__ import annotations
 
 import curses
+import os
 import time
 
 from .constants import (
@@ -81,7 +82,23 @@ def main(stdscr: curses.window) -> None:
     stdscr.nodelay(True)
     stdscr.timeout(200)
 
-    glyphs = build_glyphs(DEFAULT_BLOCK_CHAR)
+    # Choose block character.
+    # Priority:
+    #   1. TERMBLOCKS_BLOCK_CHAR env var (explicit override)
+    #   2. ACS_BLOCK via curses alternate-char-set, but only when the
+    #      terminfo has smacs/rmacs (i.e. the terminal actually supports it,
+    #      e.g. wy50, vt100).  curses.tigetstr returns None/b"" when absent.
+    #   3. DEFAULT_BLOCK_CHAR (unicode █ for colour terminals, '#' fallback)
+    block_char = DEFAULT_BLOCK_CHAR
+    if not os.environ.get("TERMBLOCKS_BLOCK_CHAR"):
+        try:
+            has_acs = bool(curses.tigetstr("smacs"))
+            if has_acs and curses.ACS_BLOCK not in (0, ord(" ")):
+                block_char = chr(curses.ACS_BLOCK)
+        except (AttributeError, curses.error):
+            pass
+
+    glyphs = build_glyphs(block_char)
 
     bitcoin = BitcoinData()
     bitcoin.start()
