@@ -4,7 +4,7 @@ Entry point: `python -m termblocks`
 Main loop responsibilities:
   - Start the BitcoinData background thread.
   - Handle keyboard input (navigation, screensaver toggle, refresh, quit).
-  - Drive the view cycle timer.
+  - Drive the screensaver/view cycle timer.
   - Delegate all rendering to ui.py and the active view function.
 """
 
@@ -24,48 +24,25 @@ from .ui import (
     draw_screen_tabs,
     draw_content_border,
     draw_bottom_panel,
+    draw_centered,
 )
 from .views import MENU
 
 
 # ============================================================
-# Screensaver
+# Build a flat ordered list of all (screen_idx, view_idx) pairs
 # ============================================================
 
-def run_screensaver(stdscr: curses.window, rows: int, cols: int, glyphs: dict) -> None:
-    """Simple moving-block screensaver; exits on any keypress."""
-    from .ui import render_big_text, safe_addstr
-    import math
+def _build_screensaver_sequence() -> list[tuple[int, int]]:
+    """Return every (screen_idx, view_idx) pair in order, for screensaver cycling."""
+    seq: list[tuple[int, int]] = []
+    for si, screen in enumerate(MENU):
+        for vi in range(len(screen["views"])):
+            seq.append((si, vi))
+    return seq
 
-    text = "TERMBLOCKS"
-    rendered = render_big_text(text, glyphs)
-    text_w = max(len(l) for l in rendered)
-    text_h = len(rendered)
 
-    x = (cols - text_w) // 2
-    y = (rows - text_h) // 2
-    dx, dy = 1, 1
-
-    stdscr.nodelay(True)
-    stdscr.timeout(50)
-
-    while True:
-        ch = stdscr.getch()
-        if ch != curses.ERR:
-            break
-
-        stdscr.erase()
-        for i, line in enumerate(rendered):
-            safe_addstr(stdscr, y + i, x, line, rows, cols)
-        stdscr.refresh()
-
-        x += dx
-        y += dy
-        if x <= 0 or x + text_w >= cols:
-            dx = -dx
-        if y <= 0 or y + text_h >= rows:
-            dy = -dy
-        time.sleep(0.05)
+_SS_SEQUENCE = _build_screensaver_sequence()
 
 
 # ============================================================
@@ -90,6 +67,9 @@ def main(stdscr: curses.window) -> None:
     screensaver = False
     last_cycle = time.monotonic()
 
+    # Index into _SS_SEQUENCE for screensaver cycling
+    ss_seq_idx = 0
+
     rows, cols = TERMINAL_ROWS, TERMINAL_COLS
 
     while True:
@@ -102,58 +82,73 @@ def main(stdscr: curses.window) -> None:
 
         elif ch in (ord("s"), ord("S")):
             screensaver = not screensaver
+            if screensaver:
+                # Initialise screensaver position to match current view
+                for i, (si, vi) in enumerate(_SS_SEQUENCE):
+                    if si == screen_idx and vi == view_idx:
+                        ss_seq_idx = i
+                        break
+            last_cycle = time.monotonic()
 
         elif ch in (ord("r"), ord("R")):
             bitcoin.request_refresh()
 
         elif ch in (curses.KEY_LEFT, ord("h"), ord("H")):
+            if screensaver:
+                screensaver = False
             screen_idx = (screen_idx - 1) % len(MENU)
             view_idx = 0
             last_cycle = time.monotonic()
 
         elif ch in (curses.KEY_RIGHT, ord("l"), ord("L")):
+            if screensaver:
+                screensaver = False
             screen_idx = (screen_idx + 1) % len(MENU)
             view_idx = 0
             last_cycle = time.monotonic()
 
         elif ch in (curses.KEY_UP, ord("k"), ord("K")):
+            if screensaver:
+                screensaver = False
             num_views = len(MENU[screen_idx]["views"])
             view_idx = (view_idx - 1) % num_views
             last_cycle = time.monotonic()
 
         elif ch in (curses.KEY_DOWN, ord("j"), ord("J")):
+            if screensaver:
+                screensaver = False
             num_views = len(MENU[screen_idx]["views"])
             view_idx = (view_idx + 1) % num_views
             last_cycle = time.monotonic()
 
-        # --- Screensaver ---
-        if screensaver:
-            run_screensaver(stdscr, rows, cols, glyphs)
-            screensaver = False
-            stdscr.nodelay(True)
-            stdscr.timeout(200)
-            continue
-
-        # --- Auto-cycle views ---
+        # --- Screensaver auto-cycle ---
         now = time.monotonic()
-        if now - last_cycle >= CYCLE_INTERVAL:
-            num_views = len(MENU[screen_idx]["views"])
-            view_idx = (view_idx + 1) % num_views
+        if screensaver and now - last_cycle >= CYCLE_INTERVAL:
+            ss_seq_idx = (ss_seq_idx + 1) % len(_SS_SEQUENCE)
+            screen_idx, view_idx = _SS_SEQUENCE[ss_seq_idx]
             last_cycle = now
 
         # --- Render ---
         data = bitcoin.snapshot()
         stdscr.erase()
 
-        draw_screen_tabs(stdscr, MENU, screen_idx, rows, cols)
-        draw_content_border(stdscr, rows, cols)
+        if screensaver:
+            # Minimal screensaver UI: just a title line and the view content
+            screen_name = MENU[screen_idx]["name"]
+            view_name = MENU[screen_idx]["views"][view_idx]["name"]
+            title = f"{screen_name} > {view_name}"
+            draw_centered(stdscr, 0, title, rows, cols)
+        else:
+            draw_screen_tabs(stdscr, MENU, screen_idx, rows, cols)
+            draw_content_border(stdscr, rows, cols)
 
         view_fn = MENU[screen_idx]["views"][view_idx]["fn"]
         view_fn(stdscr, data, rows, cols, glyphs)
 
-        draw_bottom_panel(
-            stdscr, MENU, screen_idx, view_idx, screensaver, data, rows, cols
-        )
+        if not screensaver:
+            draw_bottom_panel(
+                stdscr, MENU, screen_idx, view_idx, screensaver, data, rows, cols
+            )
 
         stdscr.refresh()
 

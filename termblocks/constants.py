@@ -15,6 +15,9 @@ MAX_SUPPLY = 21_000_000.0
 DIFFICULTY_ADJUSTMENT_INTERVAL = 2016
 TARGET_BLOCK_TIME = 600  # seconds
 
+# --- Big-digit display ---
+CHAR_GAP = 3  # spaces between characters in big-digit rendering
+
 # --- Terminal dimensions ---
 TERMINAL_COLS = 80
 TERMINAL_ROWS = 24

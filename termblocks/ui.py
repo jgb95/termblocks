@@ -7,6 +7,7 @@ from __future__ import annotations
 import curses
 
 from .constants import (
+    CHAR_GAP,
     TERMINAL_COLS,
     ROW_TOP_BORDER,
     ROW_CONTENT_START,
@@ -29,7 +30,6 @@ from .data import Snapshot
 
 DIGIT_WIDTH = 7
 DIGIT_HEIGHT = 6
-CHAR_GAP = 2
 
 _RAW_GLYPHS: dict[str, list[str]] = {
     "0": [" ##### ", "##   ##", "##   ##", "##   ##", "##   ##", " ##### "],
